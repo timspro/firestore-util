@@ -3,7 +3,7 @@
 // BATCH_SIZE should be an even number
 const BATCH_SIZE = 500
 
-export function query(db, collection, { where, limit, last }) {
+export function query(db, collection, { where = [], limit, last } = {}) {
   if (!Array.isArray(where)) {
     if (typeof where === "object" && where) {
       where = Object.entries(where).map(([key, value]) => [key, "==", value])
@@ -24,6 +24,10 @@ export function query(db, collection, { where, limit, last }) {
 }
 
 async function operate(db, collection, { once = false, ...options }, callback) {
+  if (!options.where) {
+    throw new Error("where must be defined for write operations")
+  }
+
   let count = 0
   let last
   do {
