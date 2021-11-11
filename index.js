@@ -3,18 +3,35 @@
 // BATCH_SIZE should be an even number
 const BATCH_SIZE = 500
 
-export function query(db, collection, { where = [], limit, last } = {}) {
-  if (!Array.isArray(where)) {
-    if (typeof where === "object" && where) {
-      where = Object.entries(where).map(([key, value]) => [key, "==", value])
-    } else {
-      throw new Error("where must be an array of clauses or an object to equal")
-    }
+function checkWhere(where) {
+  if (Array.isArray(where)) {
+    return where
+  } else if (where && typeof where === "object") {
+    return Object.entries(where).map(([key, value]) => [key, "==", value])
   }
+  throw new Error("where must be an array of clauses or an object to equal")
+}
+
+function checkOrderBy(orderBy) {
+  if (Array.isArray(orderBy)) {
+    return Object.fromEntries(orderBy.map((key) => [key, "asc"]))
+  }
+  if (orderBy && typeof orderBy === "object") {
+    return orderBy
+  }
+  throw new Error("where must be an array of clauses or an object to equal")
+}
+
+export function query(db, collection, { where = [], orderBy = [], limit, last } = {}) {
+  where = checkWhere(where)
+  orderBy = checkOrderBy(orderBy)
 
   let request = db.collection(collection)
   for (const clause of where) {
     request = request.where(...clause)
+  }
+  for (const [key, sort] of Object.entries(orderBy)) {
+    request = request.orderBy(key, sort)
   }
   if (last) {
     request = request.startAfter(last)

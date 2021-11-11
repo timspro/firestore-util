@@ -32,6 +32,13 @@ autotest(query, { setup, after: afterQuery })(db, test1, { where: { test: 2 } })
   second,
   fourth,
 ])
+autotest(query, { setup, after: afterQuery })(db, test1, { orderBy: { name: "desc" } })([
+  fifth,
+  fourth,
+  third,
+  second,
+  first,
+])
 
 const options = { where, limit: 1 }
 autotest(query, { setup, after: afterQuery })(db, test1, options)([second])
