@@ -7,7 +7,11 @@ function checkWhere(where) {
   if (Array.isArray(where)) {
     return where
   } else if (where && typeof where === "object") {
-    return Object.entries(where).map(([key, value]) => [key, "==", value])
+    return Object.entries(where).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? "in" : "==",
+      value,
+    ])
   }
   throw new Error("where must be an array of clauses or an object to equal")
 }

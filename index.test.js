@@ -32,6 +32,11 @@ autotest(query, { setup, after: afterQuery })(db, test1, { where: { test: 2 } })
   second,
   fourth,
 ])
+autotest(query, { setup, after: afterQuery })(db, test1, { where: { test: [1, 2] } })([
+  first,
+  second,
+  fourth,
+])
 autotest(query, { setup, after: afterQuery })(db, test1, { orderBy: { name: "desc" } })([
   fifth,
   fourth,
