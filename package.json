@@ -5,7 +5,7 @@
   "main": "./src/index.js",
   "type": "module",
   "scripts": {
-    "test": "TEST_SIZE=100 BATCH_SIZE=10 node --no-warnings --experimental-vm-modules node_modules/.bin/jest --runInBand"
+    "test": "TEST_SIZE=200 BATCH_SIZE=10 node --no-warnings --experimental-vm-modules node_modules/.bin/jest --runInBand"
   },
   "author": "",
   "license": "MIT",
