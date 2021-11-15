@@ -1,6 +1,6 @@
 {
   "name": "@tim-code/firestore-util",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "",
   "main": "./src/index.js",
   "type": "module",
@@ -23,5 +23,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^4.15.1"
   }
 }
