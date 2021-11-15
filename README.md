@@ -13,3 +13,13 @@ The Firestore SDK exposes a lot of functionality; however, it could be easier to
 This zero-dependency library offers common operations such as `update`, `remove`, `copy`, `remove` that make use of batch correctly.
 
 To support this, `query` is also offered with `where` and `limit` options to allow for a query to be specified with data.
+
+## Environment Variables
+
+To aid testing, there are a few environment variables which create large tests:
+
+`TEST_SIZE`: the number of objects to put into the database
+
+`BATCH_SIZE`: the number of objects to put into a batch
+
+`CONCURRENT`: the number of batches executed in parallel

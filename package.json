@@ -1,17 +1,17 @@
 {
   "name": "@tim-code/firestore-util",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
-  "main": "./src/operations.js",
+  "main": "./src/index.js",
   "type": "module",
   "scripts": {
-    "test": "node --no-warnings --experimental-vm-modules node_modules/.bin/jest"
+    "test": "TEST_SIZE=100 BATCH_SIZE=10 node --no-warnings --experimental-vm-modules node_modules/.bin/jest --runInBand"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@tim-code/autotest": "^0.9.2",
-    "@tim-code/eslint-config": "^0.5.6",
+    "@tim-code/eslint-config": "^0.5.10",
     "jest": "^27.3.1"
   },
   "jest": {

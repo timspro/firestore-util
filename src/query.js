@@ -1,6 +1,6 @@
 import { chunk, findIndexes, separate } from "./util.js"
 
-export function checkWhere(where) {
+function checkWhere(where) {
   if (Array.isArray(where)) {
     return where
   } else if (where && typeof where === "object") {
@@ -11,7 +11,7 @@ export function checkWhere(where) {
   throw new Error("where must be an array of clauses or an object to equal")
 }
 
-export function checkOrderBy(orderBy) {
+function checkOrderBy(orderBy) {
   if (Array.isArray(orderBy)) {
     return Object.fromEntries(orderBy.map((key) => [key, "asc"]))
   }
@@ -38,7 +38,7 @@ function rawQuery(db, collection, { where, orderBy, limit, last }) {
 
 const CLAUSE_SIZE = 10
 
-export function chunkClauseValueAt(index) {
+function chunkClauseValueAt(index) {
   return (where) => {
     const [before, [field, operator, value], after] = separate(where, index)
     return chunk(value, CLAUSE_SIZE).map((valueSubset) => {
