@@ -1,24 +1,15 @@
 {
   "name": "@tim-code/firestore-util",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "",
-  "main": "./index.cjs",
-  "exports": {
-    "import": "./index.js",
-    "require": "./index.cjs"
-  },
+  "main": "./src/operations.js",
   "type": "module",
   "scripts": {
-    "test": "node --no-warnings --experimental-vm-modules node_modules/.bin/jest",
-    "prepublishOnly": "babel index.js --out-file index.cjs"
+    "test": "node --no-warnings --experimental-vm-modules node_modules/.bin/jest"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@google-cloud/firestore": "^4.15.1",
-    "@babel/cli": "^7.16.0",
-    "@babel/core": "^7.16.0",
-    "@babel/preset-env": "^7.16.0",
     "@tim-code/autotest": "^0.9.2",
     "@tim-code/eslint-config": "^0.5.6",
     "jest": "^27.3.1"
@@ -29,18 +20,6 @@
   "eslintConfig": {
     "extends": "@tim-code",
     "ignorePatterns": "index.cjs"
-  },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "node": 12
-          }
-        }
-      ]
-    ]
   },
   "publishConfig": {
     "access": "public"
