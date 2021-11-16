@@ -1,12 +1,36 @@
 import { chunk, findIndexes, separate } from "./util.js"
 
+function objectClause([key, value]) {
+  if (value === undefined) {
+    return undefined
+  }
+  if (Array.isArray(value)) {
+    return [key, "in", value]
+  }
+  if (value && typeof value === "object") {
+    if (value.$lt) {
+      return [key, "<", value.$lt]
+    }
+    if (value.$gt) {
+      return [key, ">", value.$gt]
+    }
+    if (value.$lte) {
+      return [key, "<=", value.$lte]
+    }
+    if (value.$gte) {
+      return [key, ">=", value.$gte]
+    }
+  }
+  return [key, "==", value]
+}
+
 function checkWhere(where) {
   if (Array.isArray(where)) {
     return where
   } else if (where && typeof where === "object") {
-    const operator = (value) => (Array.isArray(value) ? "in" : "==")
-    const clause = ([key, value]) => [key, operator(value), value]
-    return Object.entries(where).map(clause)
+    return Object.entries(where)
+      .map(objectClause)
+      .filter((_) => _)
   }
   throw new Error("where must be an array of clauses or an object to equal")
 }
