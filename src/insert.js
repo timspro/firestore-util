@@ -8,6 +8,9 @@ class InsertState {
   }
 
   operation(idRef, element) {
+    if (this.operationCount && this.operationCount % BATCH_LIMIT === 0) {
+      this.next()
+    }
     this.current().set(idRef, element)
     this.count++
     this.operationCount++
@@ -38,8 +41,6 @@ export async function insert(db, collection, data, { limit = OPERATIONS_LIMIT } 
     if (state.operationCount >= limit) {
       // eslint-disable-next-line no-await-in-loop
       await state.send()
-    } else if (state.count % BATCH_LIMIT === 0) {
-      state.next()
     }
     state.operation(db.collection(collection).doc(id), element)
   }

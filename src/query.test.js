@@ -22,7 +22,7 @@ autotest(query, options)(db, coll, { where: { number: [1, 2] } })([
 ])
 autotest(query, options)(db, coll, { limit: 5 })(testNumbers({ limit: 5 }))
 autotest(query, options)(db, coll, {
-  where: [["number", "<", 10]],
+  where: { number: { $lt: 10 } },
   orderBy: { number: "desc" },
 })(testNumbers({ limit: 10 }).reverse())
 
