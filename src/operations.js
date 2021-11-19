@@ -43,7 +43,10 @@ async function operate(
 
 export function update(db, collection, { transform, ...options }) {
   return operate(db, collection, { ...options, opCount: 1 }, (batch, id, data) => {
-    batch.update(db.collection(collection).doc(id), transform(data))
+    const result = transform(data)
+    if (Object.keys(result).length) {
+      batch.update(db.collection(collection).doc(id), result)
+    }
   })
 }
 
