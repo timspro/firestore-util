@@ -1,27 +1,30 @@
 import { chunk, findIndexes, separate } from "./util.js"
 
+// eslint-disable-next-line max-statements
 function objectClause([key, value]) {
   if (value === undefined) {
     return undefined
   }
   if (Array.isArray(value)) {
-    return [key, "in", value]
+    return [[key, "in", value]]
   }
   if (value && typeof value === "object") {
+    const clauses = []
     if (value.$lt) {
-      return [key, "<", value.$lt]
+      clauses.push([key, "<", value.$lt])
     }
     if (value.$gt) {
-      return [key, ">", value.$gt]
+      clauses.push([key, ">", value.$gt])
     }
     if (value.$lte) {
-      return [key, "<=", value.$lte]
+      clauses.push([key, "<=", value.$lte])
     }
     if (value.$gte) {
-      return [key, ">=", value.$gte]
+      clauses.push([key, ">=", value.$gte])
     }
+    return clauses
   }
-  return [key, "==", value]
+  return [[key, "==", value]]
 }
 
 function checkWhere(where) {
@@ -31,6 +34,7 @@ function checkWhere(where) {
     return Object.entries(where)
       .map(objectClause)
       .filter((_) => _)
+      .flat()
   }
   throw new Error("where must be an array of clauses or an object to equal")
 }
