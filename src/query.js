@@ -51,13 +51,16 @@ function checkWhere(where) {
 }
 
 function checkOrderBy(orderBy) {
+  if (typeof orderBy === "string") {
+    return { [orderBy]: "asc" }
+  }
   if (Array.isArray(orderBy)) {
     return Object.fromEntries(orderBy.map((key) => [key, "asc"]))
   }
   if (orderBy && typeof orderBy === "object") {
     return orderBy
   }
-  throw new Error("where must be an array of clauses or an object to equal")
+  throw new Error("orderBy must be an object, array of strings, or string")
 }
 
 function rawQuery(db, collection, { where, orderBy, limit, last }) {
