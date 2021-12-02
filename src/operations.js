@@ -5,16 +5,26 @@ export const BATCH_LIMIT = process.env.BATCH_LIMIT || 500
 export const CONCURRENCY = process.env.CONCURRENCY || 10
 export const OPERATIONS_LIMIT = BATCH_LIMIT * CONCURRENCY
 
+// eslint-disable-next-line max-statements
 async function operate(
   db,
   collection,
-  { transform = (_) => _, opCount = 1, once = false, limit = OPERATIONS_LIMIT, ...options },
+  {
+    transform = (_) => _,
+    opCount = 1,
+    once = false,
+    limit = OPERATIONS_LIMIT,
+    // eslint-disable-next-line no-console
+    log = console.log,
+    ...options
+  },
   callback
 ) {
   if (!options.where) {
     throw new Error("where must be defined for write operations")
   }
 
+  let start = Date.now()
   let count = 0
   let last
   do {
@@ -35,6 +45,10 @@ async function operate(
     await Promise.all(batches.map((batch) => batch.commit()))
     if (once) {
       break
+    }
+    if (Date.now() - start >= 10 * 60 * 1000) {
+      start = Date.now()
+      log(`collection: ${collection}, count: ${count}`)
     }
   } while (last !== undefined)
 
