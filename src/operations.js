@@ -46,7 +46,7 @@ async function operate(
     if (once) {
       break
     }
-    if (Date.now() - start >= 10 * 60 * 1000) {
+    if (Date.now() - start >= 10 * 1000) {
       start = Date.now()
       log(`collection: ${collection}, count: ${count}`)
     }
