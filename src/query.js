@@ -22,6 +22,12 @@ function objectClause([key, value]) {
     if (value.$gte !== undefined) {
       clauses.push([key, ">=", value.$gte])
     }
+    if (value.$ne !== undefined) {
+      clauses.push([key, "!=", value.$ne])
+    }
+    if (value.$eq !== undefined) {
+      clauses.push([key, "==", value.$eq])
+    }
     if (clauses.length) {
       if (Object.keys(value).length !== clauses.length) {
         throw new Error("not all keys were processed when $ conditional detected")
