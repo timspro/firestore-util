@@ -10,16 +10,16 @@ function objectClause([key, value]) {
   }
   if (value && typeof value === "object") {
     const clauses = []
-    if (value.$lt) {
+    if (value.$lt !== undefined) {
       clauses.push([key, "<", value.$lt])
     }
-    if (value.$gt) {
+    if (value.$gt !== undefined) {
       clauses.push([key, ">", value.$gt])
     }
-    if (value.$lte) {
+    if (value.$lte !== undefined) {
       clauses.push([key, "<=", value.$lte])
     }
-    if (value.$gte) {
+    if (value.$gte !== undefined) {
       clauses.push([key, ">=", value.$gte])
     }
     return clauses

@@ -23,13 +23,19 @@ export function setup(db) {
   ])
 }
 
-const unbox = (snapshot) => snapshot.docs.map((element) => element.data())
+function unbox(snapshot) {
+  return snapshot.docs.map((element) => element.data())
+}
 
-export function both(db) {
+export function getBothCollections(db) {
   return async () => ({
     [SANDBOX]: unbox(await db.collection(SANDBOX).get()),
     [EMPTY]: unbox(await db.collection(EMPTY).get()),
   })
+}
+
+export async function getIds(db, collection) {
+  return (await db.collection(collection).get()).docs.map((element) => element.id)
 }
 
 export function object(number) {
@@ -39,20 +45,28 @@ export function object(number) {
   return expect.objectContaining({ number })
 }
 
+export function string(match) {
+  return expect.stringMatching(match)
+}
+
 export function testNumbers({
   mod = 1,
   remainder = 0,
   limit = TEST_SIZE,
-  transform = (_) => _,
+  transform = (_) => object(_),
   fallback = () => false,
+  unordered = false,
 } = {}) {
   const results = []
   for (let i = 0; i < limit; i++) {
     if (i % mod === remainder) {
-      results.push(object(transform(i)))
+      results.push(transform(i))
     } else if (fallback(i)) {
       results.push(object(i))
     }
+  }
+  if (unordered) {
+    return expect.arrayContaining(results)
   }
   return results
 }

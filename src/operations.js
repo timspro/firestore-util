@@ -8,7 +8,7 @@ export const OPERATIONS_LIMIT = BATCH_LIMIT * CONCURRENCY
 async function operate(
   db,
   collection,
-  { opCount = 1, once = false, limit = OPERATIONS_LIMIT, ...options },
+  { transform = (_) => _, opCount = 1, once = false, limit = OPERATIONS_LIMIT, ...options },
   callback
 ) {
   if (!options.where) {
@@ -25,7 +25,7 @@ async function operate(
     const batches = chunk(docs, batchSize).map((subset) => {
       const batch = db.batch()
       for (const element of subset) {
-        callback(batch, element.id, element.data())
+        callback(batch, element.id, transform(element.data()))
       }
       return batch
     })
@@ -41,11 +41,10 @@ async function operate(
   return { count }
 }
 
-export function update(db, collection, { transform, ...options }) {
+export function update(db, collection, options) {
   return operate(db, collection, { ...options, opCount: 1 }, (batch, id, data) => {
-    const result = transform(data)
-    if (Object.keys(result).length) {
-      batch.update(db.collection(collection).doc(id), result)
+    if (Object.keys(data).length) {
+      batch.update(db.collection(collection).doc(id), data)
     }
   })
 }
@@ -56,15 +55,17 @@ export function remove(db, collection, options) {
   })
 }
 
-export function move(db, collection, dest, options) {
+export function move(db, collection, dest, { name = ($, _) => _, ...options } = {}) {
   return operate(db, collection, { ...options, opCount: 2 }, (batch, id, data) => {
     batch.delete(db.collection(collection).doc(id))
+    id = name(data, id)
     batch.set(db.collection(dest).doc(id), data)
   })
 }
 
-export function copy(db, collection, dest, options) {
+export function copy(db, collection, dest, { name = ($, _) => _, ...options } = {}) {
   return operate(db, collection, { ...options, opCount: 1 }, (batch, id, data) => {
+    id = name(data, id)
     batch.set(db.collection(dest).doc(id), data)
   })
 }
