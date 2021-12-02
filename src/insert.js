@@ -4,34 +4,34 @@ class InsertState {
   constructor(db) {
     this.db = db
     this.count = 0
-    this.reset()
+    this.resetBatches()
   }
 
-  operation(idRef, element) {
-    if (this.operationCount && this.operationCount % BATCH_LIMIT === 0) {
-      this.next()
+  addOperation(idRef, element) {
+    if (this.operationCount % BATCH_LIMIT === 0 && this.operationCount !== 0) {
+      this.nextBatch()
     }
-    this.current().set(idRef, element)
+    this.currentBatch().set(idRef, element)
     this.count++
     this.operationCount++
   }
 
-  current() {
+  currentBatch() {
     return this.batches[this.batches.length - 1]
   }
 
-  next() {
+  nextBatch() {
     this.batches.push(this.db.batch())
   }
 
-  reset() {
+  resetBatches() {
     this.operationCount = 0
     this.batches = [this.db.batch()]
   }
 
-  async send() {
+  async commit() {
     await Promise.all(this.batches.map((b) => b.commit()))
-    this.reset()
+    this.resetBatches()
   }
 }
 
@@ -40,10 +40,10 @@ export async function insert(db, collection, data, { limit = OPERATIONS_LIMIT } 
   for (const [id, element] of data) {
     if (state.operationCount >= limit) {
       // eslint-disable-next-line no-await-in-loop
-      await state.send()
+      await state.commit()
     }
-    state.operation(db.collection(collection).doc(id), element)
+    state.addOperation(db.collection(collection).doc(id), element)
   }
-  await state.send()
+  await state.commit()
   return { count: state.count }
 }

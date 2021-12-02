@@ -1,6 +1,6 @@
 import { Firestore } from "@google-cloud/firestore"
 import { autotest } from "@tim-code/autotest"
-import { object, SANDBOX as collection, setup, testNumbers } from "../test/util.js"
+import { SANDBOX as collection, setup, testNumbers, testObject } from "../test/util.js"
 import { query } from "./query.js"
 
 const db = new Firestore()
@@ -13,11 +13,18 @@ const options = { after }
 autotest(query, options)(db, collection, {
   where: [["odd", "==", 1]],
 })(testNumbers({ mod: 2, remainder: 1 }))
+
 autotest(query, options)(db, collection, { where: { odd: 1 } })(
   testNumbers({ mod: 2, remainder: 1 })
 )
-autotest(query, options)(db, collection, { where: { number: [1, 2] } })([object(1), object(2)])
+
+autotest(query, options)(db, collection, { where: { number: [1, 2] } })([
+  testObject(1),
+  testObject(2),
+])
+
 autotest(query, options)(db, collection, { limit: 5 })(testNumbers({ limit: 5 }))
+
 autotest(query, options)(db, collection, {
   where: { number: { $gt: 0, $lt: 10 } },
   orderBy: { number: "desc" },

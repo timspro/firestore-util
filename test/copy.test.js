@@ -1,15 +1,7 @@
 import { Firestore } from "@google-cloud/firestore"
 import { autotest } from "@tim-code/autotest"
 import { copy } from "../src/operations.js"
-import {
-  EMPTY,
-  getBothCollections,
-  getIds,
-  SANDBOX,
-  setup,
-  string,
-  testNumbers,
-} from "./util.js"
+import { EMPTY, getBothCollections, getIds, SANDBOX, setup, testNumbers } from "./util.js"
 
 const db = new Firestore()
 const testOptions = { setup: () => setup(db) }
@@ -26,7 +18,7 @@ autotest(copy, { ...testOptions, after: () => getIds(db, EMPTY) })(...input2)(
   testNumbers({
     mod: 2,
     remainder: 1,
-    transform: (number) => string(`A${number}`),
+    transform: (number) => `A${number}`,
     unordered: true,
   })
 )

@@ -58,14 +58,18 @@ export function remove(db, collection, options) {
 export function move(db, collection, dest, { name = ($, _) => _, ...options } = {}) {
   return operate(db, collection, { ...options, opCount: 2 }, (batch, id, data) => {
     batch.delete(db.collection(collection).doc(id))
-    id = name(data, id)
-    batch.set(db.collection(dest).doc(id), data)
+    const newId = name(data, id)
+    if (collection !== dest || id !== newId) {
+      batch.set(db.collection(dest).doc(newId), data)
+    }
   })
 }
 
 export function copy(db, collection, dest, { name = ($, _) => _, ...options } = {}) {
   return operate(db, collection, { ...options, opCount: 1 }, (batch, id, data) => {
-    id = name(data, id)
-    batch.set(db.collection(dest).doc(id), data)
+    const newId = name(data, id)
+    if (collection !== dest || id !== newId) {
+      batch.set(db.collection(dest).doc(newId), data)
+    }
   })
 }

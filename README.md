@@ -16,7 +16,7 @@ To support this, `query` is also offered with `where` and `limit` options to all
 
 ## Environment Variables
 
-To aid testing, there are a few environment variables which create large tests:
+To aid testing, there are a few environment variables which create large tests and are used in `package.json`:
 
 `TEST_SIZE`: the number of objects to put into the database
 

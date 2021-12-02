@@ -38,35 +38,35 @@ export async function getIds(db, collection) {
   return (await db.collection(collection).get()).docs.map((element) => element.id)
 }
 
-export function object(number) {
+export function testObject(number) {
   if (number && typeof number === "object") {
     return expect.objectContaining(number)
   }
   return expect.objectContaining({ number })
 }
 
-export function string(match) {
-  return expect.stringMatching(match)
+export function testArray(array) {
+  return expect.arrayContaining(array)
 }
 
 export function testNumbers({
   mod = 1,
   remainder = 0,
   limit = TEST_SIZE,
-  transform = (_) => object(_),
+  transform = (_) => testObject(_),
   fallback = () => false,
   unordered = false,
 } = {}) {
   const results = []
-  for (let i = 0; i < limit; i++) {
-    if (i % mod === remainder) {
-      results.push(transform(i))
-    } else if (fallback(i)) {
-      results.push(object(i))
+  for (let number = 0; number < limit; number++) {
+    if (number % mod === remainder) {
+      results.push(transform(number))
+    } else if (fallback(number)) {
+      results.push(testObject(number))
     }
   }
   if (unordered) {
-    return expect.arrayContaining(results)
+    return testArray(results)
   }
   return results
 }
