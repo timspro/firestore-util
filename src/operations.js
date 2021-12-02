@@ -16,6 +16,8 @@ async function operate(
     limit = OPERATIONS_LIMIT,
     // eslint-disable-next-line no-console
     log = console.log,
+    // logInterval in seconds
+    logInterval = 10,
     ...options
   },
   callback
@@ -46,7 +48,7 @@ async function operate(
     if (once) {
       break
     }
-    if (Date.now() - start >= 10 * 1000) {
+    if (Date.now() - start >= logInterval * 1000) {
       start = Date.now()
       log(`collection: ${collection}, count: ${count}`)
     }
