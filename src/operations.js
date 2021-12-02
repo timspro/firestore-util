@@ -42,6 +42,9 @@ async function operate(
 }
 
 export function update(db, collection, options) {
+  if (!options.transform) {
+    throw new Error("transform must be provided for update")
+  }
   return operate(db, collection, { ...options, opCount: 1 }, (batch, id, data) => {
     if (Object.keys(data).length) {
       batch.update(db.collection(collection).doc(id), data)

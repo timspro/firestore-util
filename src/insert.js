@@ -30,7 +30,7 @@ class InsertState {
   }
 
   async commit() {
-    await Promise.all(this.batches.map((b) => b.commit()))
+    await Promise.all(this.batches.map((batch) => batch.commit()))
     this.resetBatches()
   }
 }
