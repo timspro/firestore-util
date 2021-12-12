@@ -5,7 +5,7 @@ export const BATCH_LIMIT = process.env.BATCH_LIMIT || 500
 export const CONCURRENCY = process.env.CONCURRENCY || 10
 export const OPERATIONS_LIMIT = BATCH_LIMIT * CONCURRENCY
 
-// eslint-disable-next-line max-statements
+// eslint-disable-next-line max-statements, max-lines-per-function
 async function operate(
   db,
   collection,
@@ -16,8 +16,7 @@ async function operate(
     limit = OPERATIONS_LIMIT,
     // eslint-disable-next-line no-console
     log = console.log,
-    // logInterval in seconds
-    logInterval = 10,
+    logInterval = 10, // seconds
     ...options
   },
   callback
@@ -29,15 +28,18 @@ async function operate(
   let start = Date.now()
   let count = 0
   let last
+  // use await to prevent memory overflow
   do {
-    const queryOptions = { ...options, limit: limit / opCount, last }
+    const callsPerBatch = limit / opCount
+    const queryOptions = { ...options, limit: callsPerBatch, last }
     // eslint-disable-next-line no-await-in-loop
     const docs = await query(db, collection, queryOptions)
     const batchSize = Math.ceil(BATCH_LIMIT / opCount)
     const batches = chunk(docs, batchSize).map((subset) => {
       const batch = db.batch()
       for (const element of subset) {
-        callback(batch, element.id, transform(element.data()))
+        const { id } = element
+        callback({ batch, id, data: transform(element.data()) })
       }
       return batch
     })
@@ -61,34 +63,39 @@ export function update(db, collection, options) {
   if (!options.transform) {
     throw new Error("transform must be provided for update")
   }
-  return operate(db, collection, { ...options, opCount: 1 }, (batch, id, data) => {
+  return operate(db, collection, { ...options, opCount: 1 }, ({ batch, id, data }) => {
     if (Object.keys(data).length) {
-      batch.update(db.collection(collection).doc(id), data)
+      const idRef = db.collection(collection).doc(id)
+      batch.update(idRef, data)
     }
   })
 }
 
 export function remove(db, collection, options) {
-  return operate(db, collection, { ...options, opCount: 1 }, (batch, id) => {
-    batch.delete(db.collection(collection).doc(id))
+  return operate(db, collection, { ...options, opCount: 1 }, ({ batch, id }) => {
+    const idRef = db.collection(collection).doc(id)
+    batch.delete(idRef)
   })
 }
 
-export function move(db, collection, dest, { name = ($, _) => _, ...options } = {}) {
-  return operate(db, collection, { ...options, opCount: 2 }, (batch, id, data) => {
-    batch.delete(db.collection(collection).doc(id))
-    const newId = name(data, id)
-    if (newId && (collection !== dest || id !== newId)) {
-      batch.set(db.collection(dest).doc(newId), data)
-    }
-  })
+function innerCopy({ db, collection, name, dest, batch, id, data }) {
+  const newId = name(data, id)
+  if (newId && (collection !== dest || id !== newId)) {
+    const newIdRef = db.collection(dest).doc(newId)
+    batch.set(newIdRef, data)
+  }
 }
 
-export function copy(db, collection, dest, { name = ($, _) => _, ...options } = {}) {
-  return operate(db, collection, { ...options, opCount: 1 }, (batch, id, data) => {
-    const newId = name(data, id)
-    if (newId && (collection !== dest || id !== newId)) {
-      batch.set(db.collection(dest).doc(newId), data)
-    }
+export function copy(db, collection, dest, { name = (_, $) => $, ...options } = {}) {
+  return operate(db, collection, { ...options, opCount: 1 }, ({ batch, id, data }) =>
+    innerCopy({ db, collection, name, dest, batch, id, data })
+  )
+}
+
+export function move(db, collection, dest, { name = (_, $) => $, ...options } = {}) {
+  return operate(db, collection, { ...options, opCount: 2 }, ({ batch, id, data }) => {
+    const idRef = db.collection(collection).doc(id)
+    batch.delete(idRef)
+    innerCopy({ db, collection, name, dest, batch, id, data })
   })
 }
