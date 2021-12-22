@@ -96,10 +96,15 @@ export const QUERY_LIMIT = 500
 export function query(
   db,
   collection,
-  { where = [], orderBy = [], limit = QUERY_LIMIT, last = undefined } = {}
+  { where = [], orderBy = [], limit = QUERY_LIMIT, last = undefined, log = false } = {}
 ) {
   where = checkWhere(where)
   orderBy = checkOrderBy(orderBy)
+
+  if (log) {
+    // eslint-disable-next-line no-console
+    console.log(`${new Date().toLocaleString()}: request started:`, where)
+  }
 
   let wheres = [where]
   const indexes = findIndexes(where, ([, operator]) => operator === "in")
@@ -109,5 +114,12 @@ export function query(
 
   const rawOptions = (w) => ({ where: w, orderBy, limit, last })
   const promises = wheres.map((w) => rawQuery(db, collection, rawOptions(w)))
-  return Promise.all(promises).then((results) => results.map((_) => _.docs).flat())
+  return Promise.all(promises).then((results) => {
+    const docs = results.map((_) => _.docs).flat()
+    if (log) {
+      // eslint-disable-next-line no-console
+      console.log(`${new Date().toLocaleString()}: request finished:`, where)
+    }
+    return docs
+  })
 }
