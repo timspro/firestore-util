@@ -123,3 +123,7 @@ export function query(
     return docs
   })
 }
+
+export function unbox(docs) {
+  return docs.map((doc) => doc.data())
+}

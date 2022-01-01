@@ -1,14 +1,13 @@
 import { Firestore } from "@google-cloud/firestore"
 import { autotest } from "@tim-code/autotest"
 import { SANDBOX as collection, setup, testNumbers, testObject } from "../test/util.js"
-import { query } from "./query.js"
+import { query, unbox } from "./query.js"
 
 const db = new Firestore()
 
 beforeAll(() => setup(db))
 
-const after = (elements) => elements.map((element) => element.data())
-const options = { after }
+const options = { after: unbox }
 
 autotest(query, options)(db, collection, {
   where: [["odd", "==", 1]],
