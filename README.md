@@ -23,3 +23,11 @@ To aid testing, there are a few environment variables which create large tests a
 `BATCH_SIZE`: the number of objects to put into a batch
 
 `CONCURRENT`: the number of batches executed in parallel
+
+## "Transaction too big. Decrease transaction size."
+
+To force the creation of smaller batches, use `batchDivisor` as in:
+
+```js
+db.remove(collection, { where: [], batchDivisor: 2 })
+```

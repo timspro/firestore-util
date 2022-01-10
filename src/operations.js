@@ -11,7 +11,7 @@ async function operate(
   collection,
   {
     transform = (_) => _,
-    opCount = 1,
+    batchDivisor = 1,
     once = false,
     limit = OPERATIONS_LIMIT,
     // eslint-disable-next-line no-console
@@ -30,11 +30,11 @@ async function operate(
   let last
   // use await to prevent memory overflow
   do {
-    const callsPerBatch = limit / opCount
+    const callsPerBatch = limit / batchDivisor
     const queryOptions = { ...options, limit: callsPerBatch, last }
     // eslint-disable-next-line no-await-in-loop
     const docs = await query(db, collection, queryOptions)
-    const batchSize = Math.ceil(BATCH_LIMIT / opCount)
+    const batchSize = Math.ceil(BATCH_LIMIT / batchDivisor)
     const batches = chunk(docs, batchSize).map((subset) => {
       const batch = db.batch()
       for (const element of subset) {
@@ -63,7 +63,7 @@ export function update(db, collection, options) {
   if (!options.transform) {
     throw new Error("transform must be provided for update")
   }
-  return operate(db, collection, { ...options, opCount: 1 }, ({ batch, id, data }) => {
+  return operate(db, collection, options, ({ batch, id, data }) => {
     if (Object.keys(data).length) {
       const idRef = db.collection(collection).doc(id)
       batch.update(idRef, data)
@@ -72,7 +72,7 @@ export function update(db, collection, options) {
 }
 
 export function remove(db, collection, options) {
-  return operate(db, collection, { ...options, opCount: 1 }, ({ batch, id }) => {
+  return operate(db, collection, options, ({ batch, id }) => {
     const idRef = db.collection(collection).doc(id)
     batch.delete(idRef)
   })
@@ -87,13 +87,13 @@ function innerCopy({ db, collection, name, dest, batch, id, data }) {
 }
 
 export function copy(db, collection, dest, { name = (_, $) => $, ...options } = {}) {
-  return operate(db, collection, { ...options, opCount: 1 }, ({ batch, id, data }) =>
+  return operate(db, collection, options, ({ batch, id, data }) =>
     innerCopy({ db, collection, name, dest, batch, id, data })
   )
 }
 
 export function move(db, collection, dest, { name = (_, $) => $, ...options } = {}) {
-  return operate(db, collection, { ...options, opCount: 2 }, ({ batch, id, data }) => {
+  return operate(db, collection, { batchDivisor: 2, ...options }, ({ batch, id, data }) => {
     const idRef = db.collection(collection).doc(id)
     batch.delete(idRef)
     innerCopy({ db, collection, name, dest, batch, id, data })
