@@ -7,12 +7,16 @@ class OperationBuffer {
     this.resetBatches()
   }
 
-  addOperation(idRef, element) {
+  addOperation(idRef, element, merge = false) {
     const atBatchLimit = this.operationCount % BATCH_LIMIT === 0
     if (atBatchLimit && this.operationCount > 0) {
       this.nextBatch()
     }
-    this.currentBatch().set(idRef, element)
+    if (merge) {
+      this.currentBatch().update(idRef, element)
+    } else {
+      this.currentBatch().set(idRef, element)
+    }
     this.count++
     this.operationCount++
   }
@@ -36,7 +40,12 @@ class OperationBuffer {
   }
 }
 
-export async function insert(db, collection, data, { limit = OPERATIONS_LIMIT } = {}) {
+export async function insert(
+  db,
+  collection,
+  data,
+  { limit = OPERATIONS_LIMIT, merge = false } = {}
+) {
   const state = new OperationBuffer(db)
   for (const [id, element] of data) {
     if (state.operationCount >= limit) {
@@ -44,7 +53,7 @@ export async function insert(db, collection, data, { limit = OPERATIONS_LIMIT } 
       await state.commit()
     }
     const idRef = db.collection(collection).doc(id)
-    state.addOperation(idRef, element)
+    state.addOperation(idRef, element, merge)
   }
   await state.commit()
   return { count: state.count }
