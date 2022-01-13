@@ -1,4 +1,5 @@
-import { query } from "./query.js"
+/* eslint-disable no-await-in-loop */
+import { query as _query } from "./query.js"
 import { chunk } from "./util.js"
 
 export const BATCH_LIMIT = process.env.BATCH_LIMIT || 500
@@ -7,7 +8,7 @@ export const OPERATIONS_LIMIT = BATCH_LIMIT * CONCURRENCY
 
 function ensureOneSecond() {
   return new Promise((resolve) => {
-    setTimeout(1000, resolve)
+    setTimeout(resolve, 1000)
   })
 }
 
@@ -16,6 +17,7 @@ async function operate(
   db,
   collection,
   {
+    query = _query,
     transform = (_) => _,
     batchDivisor = 1,
     once = false,
@@ -27,18 +29,17 @@ async function operate(
   },
   callback
 ) {
-  if (!options.where) {
+  if (!options.where && query === _query) {
     throw new Error("where must be defined for write operations")
   }
 
   let start = Date.now()
   let count = 0
   let last
-  // use await to prevent memory overflow
+  let oneSecondPromise
   do {
     const callsPerBatch = limit / batchDivisor
     const queryOptions = { ...options, limit: callsPerBatch, last }
-    // eslint-disable-next-line no-await-in-loop
     const docs = await query(db, collection, queryOptions)
     const batchSize = Math.ceil(BATCH_LIMIT / batchDivisor)
     const batches = chunk(docs, batchSize).map((subset) => {
@@ -52,8 +53,8 @@ async function operate(
     last = docs[docs.length - 1]
     count += docs.length
     const commits = batches.map((batch) => batch.commit())
-    // eslint-disable-next-line no-await-in-loop
-    await Promise.all([commits, ensureOneSecond()].flat())
+    await oneSecondPromise
+    await Promise.all(commits)
     if (once) {
       break
     }
@@ -61,6 +62,7 @@ async function operate(
       start = Date.now()
       log(`collection: ${collection}, count: ${count}`)
     }
+    oneSecondPromise = ensureOneSecond()
   } while (last !== undefined)
 
   return { count }
@@ -93,16 +95,39 @@ function innerCopy({ db, collection, name, dest, batch, id, data }) {
   }
 }
 
-export function copy(db, collection, dest, { name = (_, $) => $, ...options } = {}) {
+export function copy(db, collection, dest, { name = (el, oldId) => oldId, ...options } = {}) {
   return operate(db, collection, options, ({ batch, id, data }) =>
     innerCopy({ db, collection, name, dest, batch, id, data })
   )
 }
 
-export function move(db, collection, dest, { name = (_, $) => $, ...options } = {}) {
+export function move(db, collection, dest, { name = (el, oldId) => oldId, ...options } = {}) {
   return operate(db, collection, { batchDivisor: 2, ...options }, ({ batch, id, data }) => {
     const idRef = db.collection(collection).doc(id)
     batch.delete(idRef)
     innerCopy({ db, collection, name, dest, batch, id, data })
+  })
+}
+
+export function insert(db, collection, insertions, { merge = false, ...options } = {}) {
+  const boxed = []
+  for (const [id, element] of insertions) {
+    boxed.push({ id, data: () => element })
+  }
+
+  let ith = 0
+  function query(_, coll, { limit }) {
+    ith += limit
+    return boxed.slice(ith - limit, ith)
+  }
+  options = { ...options, query }
+
+  return operate(db, collection, options, ({ batch, id, data }) => {
+    const idRef = db.collection(collection).doc(id)
+    if (merge) {
+      batch.update(idRef, data)
+    } else {
+      batch.set(idRef, data)
+    }
   })
 }

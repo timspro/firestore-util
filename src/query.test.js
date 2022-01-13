@@ -9,7 +9,7 @@ beforeAll(() => setup(db))
 
 const options = { after: unbox }
 
-autotest(query, options)(db, collection, {
+autotest(query, { ...options, only: true, timeout: 100000 })(db, collection, {
   where: [["odd", "==", 1]],
 })(testNumbers({ mod: 2, remainder: 1 }))
 

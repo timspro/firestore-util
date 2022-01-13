@@ -26,8 +26,21 @@ To aid testing, there are a few environment variables which create large tests a
 
 ## "Transaction too big. Decrease transaction size."
 
+Firestore limits how large a transaction and batch can be.
+
 To force the creation of smaller batches, use `batchDivisor` as in:
 
 ```js
-db.remove(collection, { where: [], batchDivisor: 2 })
+import { remove } from "firestore-util"
+remove(db, collection, { where: [], batchDivisor: 2 })
+```
+
+## Performance and Parallel Write Operations ("Deadline Exceeded")
+
+Firestore only allows 10000 writes in one second. By default, `firestore-util` limits the write operations possible in one second to 2000 due to one call of a `firestore-util` function. This can be increased or decreased by changing the `limit` parameter to the function:
+
+```js
+import { insert } from "firestore-util"
+// allow theoretical maximum writes per second
+insert(db, "collection", data, { limit: 10000 })
 ```

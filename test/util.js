@@ -1,5 +1,4 @@
-import { insert } from "../src/insert.js"
-import { remove } from "../src/operations.js"
+import { insert, remove } from "../src/operations.js"
 
 export const SANDBOX = "test-sandbox"
 export const EMPTY = "test-clean"
