@@ -2,8 +2,14 @@ import { query } from "./query.js"
 import { chunk } from "./util.js"
 
 export const BATCH_LIMIT = process.env.BATCH_LIMIT || 500
-export const CONCURRENCY = process.env.CONCURRENCY || 10
+export const CONCURRENCY = process.env.CONCURRENCY || 4
 export const OPERATIONS_LIMIT = BATCH_LIMIT * CONCURRENCY
+
+function ensureOneSecond() {
+  return new Promise((resolve) => {
+    setTimeout(1000, resolve)
+  })
+}
 
 // eslint-disable-next-line max-statements, max-lines-per-function
 async function operate(
@@ -45,8 +51,9 @@ async function operate(
     })
     last = docs[docs.length - 1]
     count += docs.length
+    const commits = batches.map((batch) => batch.commit())
     // eslint-disable-next-line no-await-in-loop
-    await Promise.all(batches.map((batch) => batch.commit()))
+    await Promise.all([commits, ensureOneSecond()].flat())
     if (once) {
       break
     }
