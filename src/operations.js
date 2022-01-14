@@ -25,6 +25,7 @@ async function operate(
     // eslint-disable-next-line no-console
     log = console.log,
     logInterval = 10, // seconds
+    noData = false,
     ...options
   },
   callback
@@ -46,7 +47,8 @@ async function operate(
       const batch = db.batch()
       for (const element of subset) {
         const { id } = element
-        callback({ batch, id, data: transform(element.data()) })
+        const data = noData ? undefined : element.data()
+        callback({ batch, id, data: transform(data) })
       }
       return batch
     })
@@ -81,7 +83,7 @@ export function update(db, collection, options) {
 }
 
 export function remove(db, collection, options) {
-  return operate(db, collection, options, ({ batch, id }) => {
+  return operate(db, collection, { ...options, noData: true }, ({ batch, id }) => {
     const idRef = db.collection(collection).doc(id)
     batch.delete(idRef)
   })
