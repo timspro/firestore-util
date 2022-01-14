@@ -9,7 +9,7 @@ function id(number, max) {
   return number.toString().padStart(max.toString().length, "0")
 }
 
-function* data() {
+export function* data() {
   for (let i = 0; i < TEST_SIZE; i++) {
     yield [id(i, TEST_SIZE), { number: i, odd: i % 2 }]
   }
