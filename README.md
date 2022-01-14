@@ -35,7 +35,7 @@ import { remove } from "firestore-util"
 remove(db, collection, { where: [], limit: 100 })
 ```
 
-## Performance and Parallel Write Operations ("Deadline Exceeded")
+## Performance and Parallel Write Operations
 
 Firestore only allows 10000 writes in one second. By default, `firestore-util` limits the write operations possible in one second to 2000 due to one call of a `firestore-util` function. This can be increased or decreased by changing the `limit` parameter to the function:
 
@@ -44,3 +44,9 @@ import { insert } from "firestore-util"
 // allow theoretical maximum writes per second
 insert(db, "collection", data, { limit: 10000 })
 ```
+
+## "Deadline Exceeded"
+
+Firestore has a a very specific limit: "Maximum write rate to a collection in which documents contain sequential values in an indexed field" of 500 per second.
+
+This may be due to "hotspots" on an indexed field due to a timestamp. The best solution is to add an exemption to such fields.
