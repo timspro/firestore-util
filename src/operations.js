@@ -19,7 +19,7 @@ async function operate(
   {
     query = _query,
     transform = (_) => _,
-    batchDivisor = 1,
+    opCount = 1,
     once = false,
     limit = OPERATIONS_LIMIT,
     // eslint-disable-next-line no-console
@@ -39,10 +39,10 @@ async function operate(
   let last
   let oneSecondPromise
   do {
-    const callsPerBatch = limit / batchDivisor
+    const callsPerBatch = limit / opCount
     const queryOptions = { ...options, limit: callsPerBatch, last }
     const docs = await query(db, collection, queryOptions)
-    const batchSize = Math.ceil(BATCH_LIMIT / batchDivisor)
+    const batchSize = Math.ceil(BATCH_LIMIT / opCount)
     const batches = chunk(docs, batchSize).map((subset) => {
       const batch = db.batch()
       for (const element of subset) {
@@ -65,6 +65,7 @@ async function operate(
       log(`collection: ${collection}, count: ${count}`)
     }
     oneSecondPromise = ensureOneSecond()
+    // last is undefined because the array is empty
   } while (last !== undefined)
 
   return { count }
@@ -104,7 +105,7 @@ export function copy(db, collection, dest, { name = (el, oldId) => oldId, ...opt
 }
 
 export function move(db, collection, dest, { name = (el, oldId) => oldId, ...options } = {}) {
-  return operate(db, collection, { batchDivisor: 2, ...options }, ({ batch, id, data }) => {
+  return operate(db, collection, { opCount: 2, ...options }, ({ batch, id, data }) => {
     const idRef = db.collection(collection).doc(id)
     batch.delete(idRef)
     innerCopy({ db, collection, name, dest, batch, id, data })

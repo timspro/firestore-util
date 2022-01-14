@@ -28,11 +28,11 @@ To aid testing, there are a few environment variables which create large tests a
 
 Firestore limits how large a transaction and batch can be.
 
-To force the creation of smaller batches, use `batchDivisor` as in:
+Limit how many documents are modified across all batches in one iteration by setting the `limit` parameter:
 
 ```js
 import { remove } from "firestore-util"
-remove(db, collection, { where: [], batchDivisor: 2 })
+remove(db, collection, { where: [], limit: 100 })
 ```
 
 ## Performance and Parallel Write Operations ("Deadline Exceeded")
