@@ -127,10 +127,6 @@ export function insert(db, collection, insertions, { merge = false, ...options }
 
   return operate(db, collection, options, ({ batch, id, data }) => {
     const idRef = db.collection(collection).doc(id)
-    if (merge) {
-      batch.update(idRef, data)
-    } else {
-      batch.set(idRef, data)
-    }
+    batch.set(idRef, data, { merge })
   })
 }
