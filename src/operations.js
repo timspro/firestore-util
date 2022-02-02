@@ -43,15 +43,17 @@ async function operate(
     const queryOptions = { ...options, limit: callsPerBatch, last }
     const docs = await query(db, collection, queryOptions)
     const batchSize = Math.ceil(BATCH_LIMIT / opCount)
-    const batches = chunk(docs, batchSize).map((subset) => {
-      const batch = db.batch()
-      for (const element of subset) {
-        const { id } = element
-        const data = noData ? undefined : element.data()
-        callback({ batch, id, data: transform(data) })
-      }
-      return batch
-    })
+    const batches = await Promise.all(
+      chunk(docs, batchSize).map(async (subset) => {
+        const batch = db.batch()
+        for (const element of subset) {
+          const { id } = element
+          const data = noData ? undefined : element.data()
+          callback({ batch, id, data: await transform(data) })
+        }
+        return batch
+      })
+    )
     last = docs[docs.length - 1]
     count += docs.length
     const commits = batches.map((batch) => batch.commit())
