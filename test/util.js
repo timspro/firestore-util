@@ -1,7 +1,7 @@
 import { insert, remove } from "../src/operations.js"
 
-export const SANDBOX = "test-sandbox"
-export const EMPTY = "test-clean"
+export const SANDBOX = "sandbox-test"
+export const EMPTY = "clean-test"
 
 const TEST_SIZE = process.env.TEST_SIZE || 10
 
