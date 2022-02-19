@@ -4,6 +4,17 @@
 npm install @tim-code/firestore-util
 ```
 
+## Example
+
+```js
+import { Firestore } from "@google-cloud/firestore"
+import { query, unbox } from "./src/query.js"
+
+const db = new Firestore() // assumes your environment variables are setup correctly
+const collection = ...
+query(db, collection, {}).then(unbox).then(console.log)
+```
+
 ## Philosophy
 
 The Firestore SDK exposes a lot of functionality; however, it could be easier to use especially for common operations.
