@@ -8,9 +8,9 @@ npm install @tim-code/firestore-util
 
 The Firestore SDK exposes a lot of functionality; however, it could be easier to use especially for common operations.
 
-`batch` operations are key to controlling the number of network request; however, they can only be done 500 at time.
+`batch` operations are key to controlling the number of network requests; however, there can only be 500 operations in one batch.
 
-This zero-dependency library offers common operations such as `insert`, `update`, `move`, `copy`, and `remove` that make use of batch correctly.
+This zero-dependency library offers common operations such as `insert`, `update`, `move`, `copy`, and `remove` that make use of `batch` correctly.
 
 To support this, `query` is also offered with `where` and `limit` options to allow for a query to be specified with a write operation.
 
@@ -41,7 +41,7 @@ Returns documents that match a query using Firestore's `get` function.
 
 `limit` restricts the amount of documents returned. By default, it is 500.
 
-`unbox()` is an additional function exported that will return the actual documents when passed the query result as in the introductory example.
+`unbox()` is an another exported function that will return the actual documents when passed the query result as in the introductory example.
 
 ```js
 insert(db, collection, [[id1, data1], [id2, data2], ...], {merge})
@@ -65,6 +65,8 @@ Update documents using a callback and Firestore's `update` function.
 
 `limit` is optional. It does not affect the number of documents changed. Rather, it limits how many documents are updated at once. See below for details on why this might be useful.
 
+In the following functions, `where` and `limit` do the same sort of things.
+
 ```js
 copy(db, collection, { name, where, transform, limit })
 ```
@@ -74,6 +76,8 @@ Copy documents from one collection to another using `set`.
 `name` is an optional callback that is passed a document and its old ID. By default, it is `(element, oldId) => oldId`
 
 `transform` is optional.
+
+`name` and `transform` do the same sort of things for `move()`.
 
 ```js
 move(db, collection, { name, where, transform, limit })
