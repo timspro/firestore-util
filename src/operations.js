@@ -48,8 +48,15 @@ async function operate(
         const batch = db.batch()
         for (const element of subset) {
           const { id } = element
-          const data = noData ? undefined : element.data()
-          callback({ batch, id, data: await transform(data) })
+          let transformed
+          if (!noData) {
+            // unclear if element.data() has any side effects or is just a getter
+            transformed = await transform(element.data())
+            if (!transformed || typeof transformed !== "object") {
+              throw new Error("transform did not return an object")
+            }
+          }
+          callback({ batch, id, data: transformed })
         }
         return batch
       })
