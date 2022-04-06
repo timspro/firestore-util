@@ -1,6 +1,6 @@
 {
   "name": "@tim-code/firestore-util",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "",
   "main": "./src/index.js",
   "type": "module",
@@ -10,10 +10,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@google-cloud/firestore": "^5.0.1",
-    "@tim-code/autotest": "^0.10.3",
-    "@tim-code/eslint-config": "^0.5.14",
-    "jest": "^27.4.4"
+    "@google-cloud/firestore": "^5.0.2",
+    "@tim-code/autotest": "^1.0.2",
+    "@tim-code/eslint-config": "^0.7.1",
+    "jest": "^27.5.1"
   },
   "jest": {
     "transform": {}

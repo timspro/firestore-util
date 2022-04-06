@@ -12,7 +12,6 @@ function ensureOneSecond() {
   })
 }
 
-// eslint-disable-next-line max-statements, max-lines-per-function
 async function operate(
   db,
   collection,
@@ -25,7 +24,6 @@ async function operate(
     // eslint-disable-next-line no-console
     log = console.log,
     logInterval = 10, // seconds
-    noData = false,
     ...options
   },
   callback
@@ -48,13 +46,9 @@ async function operate(
         const batch = db.batch()
         for (const element of subset) {
           const { id } = element
-          let transformed
-          if (!noData) {
-            // unclear if element.data() has any side effects or is just a getter
-            transformed = await transform(element.data())
-            if (!transformed || typeof transformed !== "object") {
-              throw new Error("transform did not return an object")
-            }
+          const transformed = await transform(element.data())
+          if (!transformed || typeof transformed !== "object") {
+            throw new Error("transform did not return an object")
           }
           callback({ batch, id, data: transformed })
         }
@@ -93,7 +87,7 @@ export function update(db, collection, options) {
 }
 
 export function remove(db, collection, options) {
-  return operate(db, collection, { ...options, noData: true }, ({ batch, id }) => {
+  return operate(db, collection, { ...options, select: [] }, ({ batch, id }) => {
     const idRef = db.collection(collection).doc(id)
     batch.delete(idRef)
   })

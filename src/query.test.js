@@ -36,3 +36,7 @@ const eleven = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 autotest(query, options)(db, collection, { where: { number: eleven } })(
   testNumbers({ limit: 12 })
 )
+
+autotest(query, options)(db, collection, { where: { number: 1 }, select: "number" })([
+  { number: 1 },
+])
