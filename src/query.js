@@ -93,13 +93,16 @@ function rawQuery(db, collection, { where, orderBy, limit, select, last }) {
   return request.get()
 }
 
-const CLAUSE_SIZE = 10
-
-function chunkClauseValueAt(index) {
+function chunkClauseValueAt(index, clauseSize = 10) {
   return (where) => {
-    const [before, [field, operator, value], after] = separate(where, index)
-    return chunk(value, CLAUSE_SIZE).map((valueSubset) => {
-      const newClause = [field, operator, valueSubset]
+    const [before, [field, , value], after] = separate(where, index)
+    return chunk(value, clauseSize).map((valueSubset) => {
+      let newClause
+      if (clauseSize === 1) {
+        newClause = [field, "==", valueSubset[0]]
+      } else {
+        newClause = [field, "in", valueSubset]
+      }
       const newWhere = [before, [newClause], after].flat()
       return newWhere
     })
@@ -132,7 +135,11 @@ export function query(
   let wheres = [where]
   const indexes = findIndexes(where, ([, operator]) => operator === "in")
   for (const index of indexes) {
-    wheres = wheres.map(chunkClauseValueAt(index)).flat()
+    const clauseSize = index === indexes[0] ? 10 : 1
+    wheres = wheres.map(chunkClauseValueAt(index, clauseSize)).flat()
+  }
+  if (wheres.length > 10) {
+    throw new Error("cannot more than 10 queries from one request")
   }
 
   const rawOptions = (w) => ({ where: w, orderBy, limit, select, last })

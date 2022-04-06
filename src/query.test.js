@@ -40,3 +40,11 @@ autotest(query, options)(db, collection, { where: { number: eleven } })(
 autotest(query, options)(db, collection, { where: { number: 1 }, select: "number" })([
   { number: 1 },
 ])
+
+autotest(query, options)(db, collection, {
+  where: { number: [0, 1, 2, 3, 4], odd: [0, 1] },
+})(
+  testNumbers({ limit: 5, mod: 2, remainder: 0 }).concat(
+    testNumbers({ limit: 5, mod: 2, remainder: 1 })
+  )
+)
