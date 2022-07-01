@@ -139,7 +139,7 @@ export function query(
     wheres = wheres.map(chunkClauseValueAt(index, clauseSize)).flat()
   }
   if (wheres.length > 10) {
-    throw new Error("cannot more than 10 queries from one request")
+    throw new Error("cannot create more than 10 queries from one request")
   }
 
   const rawOptions = (w) => ({ where: w, orderBy, limit, select, last })
@@ -155,5 +155,11 @@ export function query(
 }
 
 export function unbox(docs) {
+  if (!docs) {
+    throw new Error("argument to unbox is falsey")
+  }
+  if (typeof docs.then === "function") {
+    return docs.then(unbox)
+  }
   return docs.map((doc) => doc.data())
 }
