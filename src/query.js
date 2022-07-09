@@ -75,7 +75,7 @@ function checkSelect(select) {
   throw new Error("select must be a string or array")
 }
 
-function rawQuery(db, collection, { where, orderBy, limit, select, last }) {
+function rawQuery(db, collection, { where, orderBy, limit, offset, select, last }) {
   let request = db.collection(collection)
   for (const clause of where) {
     request = request.where(...clause)
@@ -88,6 +88,9 @@ function rawQuery(db, collection, { where, orderBy, limit, select, last }) {
   }
   if (last) {
     request = request.startAfter(last)
+  }
+  if (offset) {
+    request = request.offset(offset)
   }
   request = request.limit(limit)
   return request.get()
@@ -118,6 +121,7 @@ export function query(
     where = [],
     orderBy = [],
     limit = QUERY_LIMIT,
+    offset = undefined,
     select = undefined,
     last = undefined,
     log = false,
@@ -142,7 +146,7 @@ export function query(
     throw new Error("cannot create more than 10 queries from one request")
   }
 
-  const rawOptions = (w) => ({ where: w, orderBy, limit, select, last })
+  const rawOptions = (w) => ({ where: w, orderBy, limit, offset, select, last })
   const promises = wheres.map((w) => rawQuery(db, collection, rawOptions(w)))
   return Promise.all(promises).then((results) => {
     const docs = results.map((_) => _.docs).flat()
